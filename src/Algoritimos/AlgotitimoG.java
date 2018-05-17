@@ -7,8 +7,10 @@ import javax.annotation.processing.Processor;
 
 public class AlgotitimoG {
 	
-	ArrayList<Double> mediaFitness;
-	ArrayList<Double> mediaFinalFitness;
+	double mediaBestFitness;
+	double fitnessMedio;
+	double mediaConvergencia;
+	double finalbestIndivido;
 	
 	//ArrayList<Double> mediaFitness;
 	
@@ -17,7 +19,7 @@ public class AlgotitimoG {
 	
 	AlgotitimoG(double proMutation, double proCrosover) {
 		
-		this.mediaFitness = new ArrayList<Double>();
+
 		this.probCrosover = proCrosover;
 		this.probMutation = proMutation;
 	
@@ -45,8 +47,6 @@ public class AlgotitimoG {
 		int[][] newValue = new int[value.length][2];
 		
 		String number="";
-		
-	
 		
 		for (int i = 0; i < value.length; i++) {
 			for (int j = 0; j < value[0].length; j++) {
@@ -78,7 +78,7 @@ public class AlgotitimoG {
 	
 	public double[][] convertPopulationReal(int[][] value, int xmax, int xmin, int ymax,int ymin, int xnumberBits, int ynumberBits){
 		
-		double[][] newValue = new double[value.length][value[0].length];
+		double[][] newValue = new double[value.length][2];
 		//System.out.println("-----------------------------------------------------------------------");
 		for (int i = 0; i < value.length; i++) {
 			for (int j = 0; j < value[0].length; j++) {
@@ -111,7 +111,7 @@ public class AlgotitimoG {
 		double[] newValue = new double[value.length];
 		//System.out.println("----------------------------FITNESS----------------------------");
 		for (int i = 0; i < value.length; i++) {
-				newValue[i] =  100/ (1 +  Math.pow(value[i][0], 2) +  Math.pow(value[i][1],2));
+				newValue[i] =  100/(1 +  Math.pow(value[i][0], 2) +  Math.pow(value[i][1],2));
 //				System.out.println("fit "+i+" => "+ newValue[i]);
 		}
 		
@@ -234,7 +234,7 @@ public class AlgotitimoG {
 	
 	public  int [][]crossoverUniforme (int vetorIndice[], int populacaoBinaria[][]){
 		
-		double proCruzamento=0.6;
+		//double proCruzamento=0.6;
 		
 		int populacaoCruzada[][] = new int[populacaoBinaria.length][populacaoBinaria[0].length];
 		int[][] individuosSelecionados = new int[vetorIndice.length][populacaoBinaria[0].length];
@@ -249,9 +249,11 @@ public class AlgotitimoG {
 			for (int j = 0; j < individuosSelecionados[0].length; j++) {
 				if (Math.random()< this.probCrosover) {
 					mascara[j]=0;
+					
 				}
 					else {
 						mascara[j]=1;
+						System.out.println("asdfasdf");
 					}
 			}
 			
@@ -295,7 +297,7 @@ public class AlgotitimoG {
         
 	public int[][] mutation (int[][] value){
 		int[][] newValue = new int[value.length][value[0].length];
-		double mult = 0.05;
+		//double mult = 0.05;
 
 		// Multation
 		for (int i = 0; i < newValue.length; i++) {
@@ -373,13 +375,13 @@ public class AlgotitimoG {
 	
 	public int min (double[] value) {
 			
-			double max = 0;
+			double min = 999999;
 			int index = 0;
 			
 			for (int i = 0; i < value.length; i++) {
 				
-				if(max < value[i] ) {
-					max = value[i];
+				if(min > value[i] ) {
+					min = value[i];
 	                index = i;
 				}
 			}
@@ -396,17 +398,12 @@ public class AlgotitimoG {
 		double[] fitness = null;
 		int[] selects = null;
 		int[][] cros = null;
-		int epooca = 300;
+		int epooca = 30;
 		
 		int[][] auxPopulation = new int[popSize][popXbits + popYbits];
 		double[][] auxReal = new double[popSize][2];
 
-		
-		double[] fitnessMedio = new double[epooca];
-        double[] bestFitness = new double[epooca];
-        int[] bestFitnessIndex = new int[epooca];
-        double[][] bestIndivido = new double[epooca][2];
-        
+
         double[] finalbestIndivido = new double[epooc];
         double[] mediaConvergencia = new double[epooc];
         double[] mediaMedia = new double[epooc];
@@ -418,13 +415,19 @@ public class AlgotitimoG {
         int indexP;
         
         for (int n = 0; n < epooc; n++) {
+        	
+        	double[] fitnessMedio = new double[epooca];
+            double[] bestFitness = new double[epooca];
+            int[] bestFitnessIndex = new int[epooca];
+            double[][] bestIndivido = new double[epooca][2];
+            
         	for (int i = 0; i < epooca; i++) {
-        		populationInterger = this.convertPopulationInterger(startPopulation,5);
-        		populationReal = this.convertPopulationReal(populationInterger, 10, 0, 10, 0, 5, 5);
+        		populationInterger = this.convertPopulationInterger(startPopulation,popXbits);
+        		populationReal = this.convertPopulationReal(populationInterger, (popXbits + popYbits), 0, (popXbits + popYbits), 0, popXbits, popYbits);
         		fitness = this.getFitness(populationReal);
 
         		indexM = this.max(fitness);
-        		bestFitnessIndex[i] = indexM;
+        		//bestFitnessIndex[i] = indexM;
 
         		if(i > 0) {
         			indexP = this.min(fitness); //pior indece 
@@ -433,6 +436,8 @@ public class AlgotitimoG {
         				startPopulation[indexP] = auxPopulation[bestFitnessIndex[i-1]];
         				fitness[indexP] = bestFitness[i-1];
         				populationReal[indexP] = auxReal[bestFitnessIndex[i-1]];
+        				
+        				//System.out.println("Go!");
 
         			}
         		}
@@ -440,6 +445,7 @@ public class AlgotitimoG {
         		fitnessMedio[i] = this.media(fitness);
 
         		indexM = this.max(fitness);
+        		bestFitnessIndex[i] = indexM;
 
         		bestFitness[i] = fitness[indexM];
 
@@ -457,6 +463,7 @@ public class AlgotitimoG {
 
         		if(combCros == 1) {
         			cros = this.crossoverUniforme(selects, startPopulation);
+        			
         		}else if (combCros == 2) {
         			cros = this.crossover(startPopulation, selects);
         		}
@@ -472,11 +479,37 @@ public class AlgotitimoG {
         		startPopulation = this.mutation(cros);
         	}
         	
-        	populationInterger = this.convertPopulationInterger(startPopulation,5);
-    		populationReal = this.convertPopulationReal(populationInterger, 10, 0, 10, 0, 5, 5);
+//            for (int i = 0; i < epooca; i++) {
+//                
+//                System.out.println("_________________Saida___________________");
+//                System.out.println("Epooca: "+i+" Media dos Fitness: "+fitnessMedio[i]);
+//                System.out.println("______________________________________________________");
+//                System.out.println("Epooca: "+i+" Melhor dos Fitness: "+bestFitness[i]);
+//                System.out.println("______________________________________________________");
+//                System.out.println("Epooca: "+i+" Melhor dos Individo: X = "+bestIndivido[i][0]+" | Y = "+bestIndivido[i][1]);
+//            
+//            }
+        	
+        	populationInterger = this.convertPopulationInterger(startPopulation,popXbits);
+    		populationReal = this.convertPopulationReal(populationInterger, (popXbits + popYbits), 0, (popXbits + popYbits), 0, popXbits, popYbits);
     		fitness = this.getFitness(populationReal);
 
     		 indexM = this.max(fitness);
+    		 indexP = this.min(fitness); //pior indece 
+
+ 			if(fitness[indexM] < bestFitness[bestFitness.length-1]) {
+ 				startPopulation[indexP] = auxPopulation[bestFitnessIndex[bestFitnessIndex.length-1]];
+ 				fitness[indexP] = bestFitness[bestFitness.length - 1];
+ 				populationReal[indexP] = auxReal[bestFitnessIndex[bestFitnessIndex.length - 1]];
+ 				
+ 				//System.out.println("Go!");
+ 			}
+    		 
+//    		 System.out.println(fitness[indexM]);
+//    		 System.out.println(bestFitness[bestFitness.length - 1]);
+
+ 			 indexM = this.max(fitness);
+ 			 
     		 finalbestIndivido[n] = fitness[indexM];
     		 
     		    double media = 0;
@@ -498,34 +531,88 @@ public class AlgotitimoG {
     	    	
     	    	
     	    	for (int j = 0; j < fitness.length; j++) {
-
     	    		if(aux == fitness[j]) {
     	    			mediaConvergencia[n] = j;
+    	    			System.out.println(" Epoca  => "+j);
     	    			break;
 
     	    		}
-    	    	}
-        }
+    	    	}	
+      }
         
+        System.out.println();
+
         for (int i = 0; i < finalbestIndivido.length; i++) {
-			
-        	
+			this.finalbestIndivido += finalbestIndivido[i];
 		}
         
+        this.finalbestIndivido = this.finalbestIndivido/finalbestIndivido.length;
+        
+        for (int i = 0; i < mediaBestFitness.length; i++) {
+			this.mediaBestFitness += mediaBestFitness[i];
+		}
+        
+        this.mediaBestFitness = this.mediaBestFitness/mediaBestFitness.length;
+        
+        for (int i = 0; i < mediaMedia.length; i++) {
+			this.fitnessMedio += mediaMedia[i];
+		}
+        	this.fitnessMedio = this.fitnessMedio/mediaMedia.length;
+        	
+        for (int i = 0; i < mediaConvergencia.length; i++) {
+			this.mediaConvergencia += mediaConvergencia[i];
+		}
+        
+       // System.out.println(mediaConvergencia.length);
+        
+        this.mediaConvergencia = this.mediaConvergencia/mediaConvergencia.length;
 
        //this.mediaFitness.add(media/fitnessMedio.length);
 
 	}
 
 
-	public ArrayList<Double> getMediaFitness() {
-		return mediaFitness;
+	public double getMediaBestFitness() {
+		return mediaBestFitness;
 	}
 
 
+	public void setMediaBestFitness(double mediaBestFitness) {
+		this.mediaBestFitness = mediaBestFitness;
+	}
+
+
+	public double getFitnessMedio() {
+		return fitnessMedio;
+	}
+
+
+	public void setFitnessMedio(double fitnessMedio) {
+		this.fitnessMedio = fitnessMedio;
+	}
+
+
+	public double getMediaConvergencia() {
+		return mediaConvergencia;
+	}
+
+
+	public void setMediaConvergencia(double mediaConvergencia) {
+		this.mediaConvergencia = mediaConvergencia;
+	}
+
+
+	public double getFinalbestIndivido() {
+		return finalbestIndivido;
+	}
+
+
+	public void setFinalbestIndivido(double finalbestIndivido) {
+		this.finalbestIndivido = finalbestIndivido;
+	}
 	
 	
-	
+
 
 //	public static void main(String[] args) {
 //		
@@ -538,17 +625,7 @@ public class AlgotitimoG {
 //		
 //	
 //                
-////                for (int i = 0; i < epooca; i++) {
-////                    
-////                    System.out.println("_________________Saida___________________");
-////                    
-////                    System.out.println("Epooca: "+i+" Media dos Fitness: "+fitnessMedio[i]);
-////                    System.out.println("______________________________________________________");
-////                    System.out.println("Epooca: "+i+" Melhor dos Fitness: "+bestFitness[i]);
-////                    System.out.println("______________________________________________________");
-////                    System.out.println("Epooca: "+i+" Melhor dos Individo: X = "+bestIndivido[i][0]+" | Y = "+bestIndivido[i][1]);
-////                
-////                }
+//
 //		
 //
 //	}
